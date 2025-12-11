@@ -138,7 +138,7 @@ drone-vision-ai/
    - 🔍 **Objects** (buildings, roads, vehicles, etc.)
    - 📝 **Description** (1-2 sentence summary)
   
-<img src="image_analysis.png" width="400" />
+<img src="image_analysis.png" width="600" />
 
 ### Object Detection (YOLO)
 
@@ -150,7 +150,7 @@ drone-vision-ai/
    - 📸 **Bounding box image** (colored rectangles around objects)
    - 📈 Statistics (total objects, classes, model used)
 
-<img src="object_detection.png" width="400" />
+<img src="object_detection.png" width="600" />
 
 ---
 
