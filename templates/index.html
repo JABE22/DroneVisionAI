@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Vision AI - Perplexity + YOLO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            padding: 15px;
+            background: #f5f5f5;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .file-label:hover {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-detect {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-detect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 30px;
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .analysis-result {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .analysis-item {
+            margin-bottom: 15px;
+        }
+
+        .analysis-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .analysis-value {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .objects-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .object-tag {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .detection-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #f5576c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detection-class {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .detection-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .bbox-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c62828;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1565c0;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-ready {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status-demo {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .preview-image.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+            }
+
+            button {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 Drone Vision AI</h1>
+            <p>Analyze drone images with Perplexity AI & YOLO Object Detection</p>
+        </div>
+
+        <div class="card">
+            <div id="info" class="info">
+                <strong>How to use:</strong> Upload an image, then click either "Analyze Image" for terrain classification or "Detect Objects" for bounding boxes.
+            </div>
+
+            <div class="form-group">
+                <label>Upload Image</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <label for="fileInput" class="file-label">
+                        📁 Click to upload or drag image here<br>
+                        <small>(JPG, PNG, GIF, or BMP)</small>
+                    </label>
+                    <div id="fileName" class="file-name"></div>
+                </div>
+                <img id="previewImage" class="preview-image" alt="Preview">
+            </div>
+
+            <div class="buttons-container">
+                <button class="btn-analyze" id="analyzeBtn" disabled>
+                    ✨ Analyze Image (Perplexity)
+                </button>
+                <button class="btn-detect" id="detectBtn" disabled>
+                    🎯 Detect Objects (YOLO)
+                </button>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Processing image...</p>
+            </div>
+
+            <div id="error" class="error"></div>
+
+            <div id="results" class="results">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileInputLabel = document.querySelector('.file-label');
+        const fileName = document.getElementById('fileName');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const detectBtn = document.getElementById('detectBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+
+        // File input handling
+        fileInput.addEventListener('change', handleFileSelect);
+        fileInputLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileInputLabel.style.background = '#f0f0ff';
+        });
+        fileInputLabel.addEventListener('dragleave', () => {
+            fileInputLabel.style.background = '';
+        });
+        fileInputLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileInputLabel.style.background = '';
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect();
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                fileName.textContent = `Selected: ${file.name}`;
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.add('show');
+                };
+                reader.readAsDataURL(file);
+
+                analyzeBtn.disabled = false;
+                detectBtn.disabled = false;
+                error.classList.remove('show');
+                results.classList.remove('show');
+            }
+        }
+
+        analyzeBtn.addEventListener('click', () => analyzeImage());
+        detectBtn.addEventListener('click', () => detectObjects());
+
+        async function analyzeImage() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayAnalysisResults(data);
+                } else {
+                    showError(data.error || 'Analysis failed');
+                }
+            } catch (err) {
+                showError(`Error: ${err.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function detectObjects() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch('/api/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayDetectionResults(data);
+                } else {
+                    showError(data.error || 'Detection failed');
+                }
+            } catch (err) {
+                showError(`Error: ${err.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayAnalysisResults(data) {
+            let html = '<div class="result-section">';
+            html += '<div class="result-title">✨ Perplexity Analysis Results</div>';
+            html += '<div class="analysis-result">';
+            
+            // Terrain Type
+            html += '<div class="analysis-item">';
+            html += '<div class="analysis-label">🗺️ Terrain Type</div>';
+            html += `<div class="analysis-value">${data.terrain_type || 'N/A'}</div>`;
+            html += '</div>';
+
+            // Objects
+            if (data.objects && data.objects.length > 0) {
+                html += '<div class="analysis-item">';
+                html += '<div class="analysis-label">🔍 Objects Detected</div>';
+                html += '<div class="objects-list">';
+                data.objects.forEach(obj => {
+                    html += `<div class="object-tag">${obj}</div>`;
+                });
+                html += '</div></div>';
+            }
+
+            // Description
+            html += '<div class="analysis-item">';
+            html += '<div class="analysis-label">📝 Description</div>';
+            html += `<div class="analysis-value">${data.description || 'No description available'}</div>`;
+            html += '</div>';
+
+            html += '</div></div>';
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+
+        function displayDetectionResults(data) {
+            let html = '<div class="result-section">';
+            html += '<div class="result-title">🎯 YOLO Object Detection Results</div>';
+
+            // Detections list
+            if (data.detections && data.detections.length > 0) {
+                html += '<div style="margin-bottom: 20px;">';
+                data.detections.forEach(det => {
+                    html += `
+                        <div class="detection-item">
+                            <span class="detection-class">${det.class}</span>
+                            <div class="detection-stats">
+                                <span>Count: <strong>${det.count}</strong></span>
+                                <span>Confidence: <strong>${(det.confidence * 100).toFixed(1)}%</strong></span>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Bounding box image
+            if (data.visualization) {
+                html += '<div style="margin-top: 20px;">';
+                html += '<div class="analysis-label">📸 Bounding Box Visualization</div>';
+                html += `<img src="/api/visualization/${data.visualization}" alt="Bounding boxes" class="bbox-image">`;
+                html += '</div>';
+            }
+
+            // Summary
+            html += '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">';
+            html += `<strong>Total Objects:</strong> ${data.total_objects} | `;
+            html += `<strong>Total Classes:</strong> ${data.total_classes} | `;
+            html += `<strong>Model:</strong> ${data.model_used}`;
+            html += '</div>';
+
+            html += '</div>';
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        function hideError() {
+            error.classList.remove('show');
+        }
+
+        // Optional: Check API status on page load
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                console.log('API Status:', data);
+            } catch (err) {
+                console.error('Could not check status:', err);
+            }
+        }
+
+        checkStatus();
+    </script>
+</body>
+</html>
