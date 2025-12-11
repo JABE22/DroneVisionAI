@@ -345,7 +345,7 @@ python3 app.py 2>&1 | grep -i "error\|warning"
 
 ### Issue: "ModuleNotFoundError: No module named 'perplexity'"
 ```bash
-pip install perplexity-py
+pip install perplexityai
 ```
 
 ---
