@@ -89,10 +89,10 @@ Open browser: `http://localhost:5000`
 PERPLEXITY_API_KEY=pplx-your-api-key-here
 
 # Optional
-FLASK_ENV=development          # development or production
+FLASK_ENV=development         # development or production
 DEMO_MODE=false               # true for demo mode (no API needed)
 PORT=5000
-YOLO_MODEL=yolo11l.pt        # yolov8n, yolov8s, yolov8m, yolov8l, yolov8x, yolo11l, etc.
+YOLO_MODEL=yolo11l.pt         # yolov8n, yolov8s, yolov8m, yolov8l, yolov8x, yolo11l, etc.
 DEBUG=True                    # Flask debug mode
 ```
 
@@ -247,7 +247,7 @@ curl -X POST -F "file=@test.jpg" \
 
 ### Resource Usage
 
-- **Memory**: ~2-4 GB (for YOLOv8s + Flask)
+- **Memory**: ~2-4 GB (for YOLO11l + Flask)
 - **GPU**: Optional (faster with CUDA, works on CPU)
 - **Storage**: ~100-500 MB for models
 
@@ -422,7 +422,7 @@ result = analyzer.analyze_image('path/to/image.jpg')
 
 #### `YOLODetector`
 ```python
-detector = YOLODetector(model_name='yolov8s.pt', demo_mode=False)
+detector = YOLODetector(model_name='yolo11l.pt', demo_mode=False)
 result = detector.detect('path/to/image.jpg', conf_threshold=0.5)
 # Returns: {'detections', 'visualization', 'total_objects', ...}
 ```
@@ -452,7 +452,7 @@ MIT License - Feel free to use, modify, and distribute
 ## 📞 Support
 
 - **Perplexity API Issues**: https://www.perplexity.ai/
-- **YOLOv8 Documentation**: https://docs.ultralytics.com/
+- **YOLO11l Documentation**: https://docs.ultralytics.com/
 - **Flask Help**: https://flask.palletsprojects.com/
 
 ---
@@ -470,7 +470,7 @@ MIT License - Feel free to use, modify, and distribute
 
 ✅ Modern web interface  
 ✅ Perplexity Vision analysis  
-✅ YOLO-11-l object detection  
+✅ YOLO11l object detection  
 ✅ Bounding box visualization  
 ✅ RESTful API  
 ✅ Error handling  
