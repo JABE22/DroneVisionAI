@@ -137,6 +137,8 @@ drone-vision-ai/
    - 🗺️ **Terrain Type** (urban, forest, etc.)
    - 🔍 **Objects** (buildings, roads, vehicles, etc.)
    - 📝 **Description** (1-2 sentence summary)
+  
+![Text analysis example](image_analysis.png)
 
 ### Object Detection (YOLO)
 
@@ -147,6 +149,8 @@ drone-vision-ai/
    - 📊 Detection list with confidence scores
    - 📸 **Bounding box image** (colored rectangles around objects)
    - 📈 Statistics (total objects, classes, model used)
+
+![Object detection example](object_detection.png)
 
 ---
 
